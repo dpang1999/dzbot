@@ -3,9 +3,11 @@ using Discord.Commands;
 using DiscordBot.Utilities;
 using DiscordBot.Utilities.Managers.Storage;
 using System;
+using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -18,6 +20,7 @@ namespace DiscordBot.Modules
         [Summary("Echoes a message.")]
         public Task SayAsync([Remainder][Summary("The text to echo")] string echo)
             => ReplyAsync(echo);
+        
 
         [Command("save")]
         [Summary("Saves the current bot data, only the bot admin can issue it")]
@@ -116,6 +119,74 @@ namespace DiscordBot.Modules
                 return ReplyAsync($"https://keqingmains.com/q/{character}-quickguide/");
             else
                 return ReplyAsync($"Guide for {character} not found.");
+        }
+
+        [Command("quoteAdd")]
+        [Summary("Add a quote")]
+        public Task quoteAdd(string quote)
+        {
+            string id = Context.Guild.Id.ToString();
+            string filename = $"quotes\\{id}.txt";
+            using (StreamWriter sw = File.AppendText(filename))
+            {
+                sw.WriteLine(quote + " " + Context.Message.Attachments.First().Url);
+            }
+            return ReplyAsync("Added: " + quote + " - " + Context.Message.Attachments.First().Url);
+        }
+
+        private Dictionary<string, List<string>> allQuotes = new Dictionary<string, List<string>>();
+        [Command("quote")]
+        [Summary("Pulls up a quote")]
+        public Task quote(int num)
+        {
+            List<string> quotes = new List<string>();
+            string id = Context.Guild.Id.ToString();
+            if (!allQuotes.ContainsKey(Context.Guild.Id.ToString()))
+            {
+                string filename = $"quotes\\{id}.txt";
+                using (StreamReader sr = File.OpenText(filename))
+                {
+                    string line = "";
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        quotes.Add(line);
+                    }
+                }
+                allQuotes.Add(id,quotes);
+            }
+            quotes = allQuotes[id];
+            if (num < quotes.Count)
+            {
+                return ReplyAsync(quotes[num+1]);
+            }
+            else
+            {
+                return ReplyAsync("Out of range, max: " + quotes.Count + " for this server.");
+            }
+        }
+
+        [Command("randQuote")]
+        [Summary("Pulls up a random quote")]
+        public Task randQuote()
+        {
+            List<string> quotes = new List<string>();
+            string id = Context.Guild.Id.ToString();
+            if (!allQuotes.ContainsKey(Context.Guild.Id.ToString()))
+            {
+                string filename = $"quotes\\{id}.txt";
+                using (StreamReader sr = File.OpenText(filename))
+                {
+                    string line = "";
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        quotes.Add(line);
+                    }
+                }
+                allQuotes.Add(id,quotes);
+            }
+            quotes = allQuotes[id];
+            int num = rand.Next(quotes.Count + 1);
+            return ReplyAsync(quotes[num]);
         }
 
         // Stupid Dice Rolling Commands of ZERO interest
