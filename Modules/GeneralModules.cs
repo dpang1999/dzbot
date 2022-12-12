@@ -60,14 +60,16 @@ namespace DiscordBot.Modules
         {
             "albedo", "aloy", "amber", "anemo traveler", "ayaka", "ayato", "barbara", "beidou", "bennett", "chongyun",
             "diluc", "diona", "electro traveler", "eula", "ganyu", "geo traveler", "gorou", "heizou", "hu tao", "itto",
-            "jean", "kaeya", "kazuha", "keqing", "klee","kokomi", "lisa", "mona", "ningguang", "noelle", "qiqi",
+            "jean", "kaeya", "kazuha", "keqing", "klee", "kokomi", "lisa", "mona", "ningguang", "noelle", "qiqi",
             "raiden", "razor", "rosaria", "sara", "shenhe", "sucrose", "tartaglia", "thoma", "tighnari", "venti",
-            "xiangling", "xiao", "xingqiu", "xinyan", "yae", "yanfei", "yelan", "yoimiya", "yun jin", "zhongli"
+            "xiangling", "xiao", "xingqiu", "xinyan", "yae", "yanfei", "yelan", "yoimiya", "yun jin", "zhongli",
+            "collei"
 
         };
         private List<String> kqmQuickGuides = new List<String>()
         {
-            "cyno", "fischl", "layla", "nahida", "nilou"
+            "cyno", "fischl", "layla", "nahida", "nilou",
+            "wanderer", "faruzan", "candace", "layla"
         };
         [Command("kqm")]
         [Summary("Posts relevant keqingmains.com guides")]
@@ -121,43 +123,61 @@ namespace DiscordBot.Modules
                 return ReplyAsync($"Guide for {character} not found.");
         }
 
+        private Dictionary<string, List<string>> allQuotes = new Dictionary<string, List<string>>();
+        public void readInQuotes()
+        {
+            List<string> quotes = new List<string>();
+            string id = Context.Guild.Id.ToString();
+            string filename = $"quotes\\{id}.txt";
+            using (StreamReader sr = File.OpenText(filename))
+            {
+                string line = "";
+                while ((line = sr.ReadLine()) != null)
+                {
+                    quotes.Add(line);
+                }
+            }
+            allQuotes.Add(id,quotes);
+        }
+        
         [Command("quoteAdd")]
         [Summary("Add a quote")]
-        public Task quoteAdd(string quote)
+        public Task quoteAdd([Remainder] string quote)
         {
             string id = Context.Guild.Id.ToString();
             string filename = $"quotes\\{id}.txt";
+            string url = null;
+            if (!allQuotes.ContainsKey(id))
+            {
+                readInQuotes();
+            }
+            if(Context.Message.Attachments.Count > 0)
+            {
+                url = Context.Message.Attachments.First().Url;
+            }
             using (StreamWriter sw = File.AppendText(filename))
             {
-                sw.WriteLine(quote + " " + Context.Message.Attachments.First().Url);
+                sw.WriteLine(quote + " " + url);
             }
-            return ReplyAsync("Added: " + quote + " - " + Context.Message.Attachments.First().Url);
+            List<string> quotes = allQuotes[id];
+            quotes.Add(quote + " " + url);
+            return ReplyAsync("Added: " + quote + " " + url);
         }
 
-        private Dictionary<string, List<string>> allQuotes = new Dictionary<string, List<string>>();
+        
         [Command("quote")]
         [Summary("Pulls up a quote")]
         public Task quote(int num)
         {
-            List<string> quotes = new List<string>();
             string id = Context.Guild.Id.ToString();
             if (!allQuotes.ContainsKey(Context.Guild.Id.ToString()))
             {
-                string filename = $"quotes\\{id}.txt";
-                using (StreamReader sr = File.OpenText(filename))
-                {
-                    string line = "";
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        quotes.Add(line);
-                    }
-                }
-                allQuotes.Add(id,quotes);
+                readInQuotes();
             }
-            quotes = allQuotes[id];
-            if (num < quotes.Count)
+            List<string> quotes = allQuotes[id];
+            if (num <= quotes.Count)
             {
-                return ReplyAsync(quotes[num+1]);
+                return ReplyAsync(quotes[num-1]);
             }
             else
             {
