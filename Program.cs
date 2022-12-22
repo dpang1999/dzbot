@@ -26,6 +26,7 @@ namespace DiscordBot
         private CommandHandler commandHandler;
         private CommandService commandService;
         
+        
         public static void Main(string[] args)
             => new Program().MainAsync().GetAwaiter().GetResult();
 
@@ -45,7 +46,7 @@ namespace DiscordBot
             client = new DiscordSocketClient(new DiscordSocketConfig { MessageCacheSize = 100 });
             commandService = new CommandService();
             commandHandler = new CommandHandler(client, commandService);
-
+            
             await commandHandler.InstallCommandsAsync();
 
             await client.LoginAsync(TokenType.Bot, File.ReadAllText(tokenDir));

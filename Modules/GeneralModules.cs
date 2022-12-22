@@ -122,13 +122,20 @@ namespace DiscordBot.Modules
             else
                 return ReplyAsync($"Guide for {character} not found.");
         }
-
+        
         private Dictionary<string, List<string>> allQuotes = new Dictionary<string, List<string>>();
         public void readInQuotes()
         {
             List<string> quotes = new List<string>();
             string id = Context.Guild.Id.ToString();
             string filename = $"quotes\\{id}.txt";
+            if (!File.Exists(filename))
+            {
+                using (FileStream fs = File.Create(filename))
+                {
+                    Console.WriteLine(filename + " created");
+                }
+            }
             using (StreamReader sr = File.OpenText(filename))
             {
                 string line = "";
@@ -150,18 +157,20 @@ namespace DiscordBot.Modules
             if (!allQuotes.ContainsKey(id))
             {
                 readInQuotes();
+                Console.WriteLine("quotes readed");
             }
             if(Context.Message.Attachments.Count > 0)
             {
                 url = Context.Message.Attachments.First().Url;
             }
+            List<string> quotes = allQuotes[id];
+            DateTime timestamp = DateTime.Today;
             using (StreamWriter sw = File.AppendText(filename))
             {
-                sw.WriteLine(quote + " " + url);
+                sw.WriteLine($"[{timestamp.ToString("d")}] {quote} {url}");
             }
-            List<string> quotes = allQuotes[id];
-            quotes.Add(quote + " " + url);
-            return ReplyAsync("Added: " + quote + " " + url);
+            quotes.Add($"[{timestamp.ToString("d")}] {quote} {url}");
+            return ReplyAsync($"Added # {quotes.Count}: [{timestamp.ToString("d")}] {quote} {url}");
         }
 
         
@@ -212,7 +221,6 @@ namespace DiscordBot.Modules
         // Stupid Dice Rolling Commands of ZERO interest
         Random rand = new Random();
         [Command("d20")]
-        [Summary("Roll a d20 lol")]
         public Task d20()
         {
             return ReplyAsync(""+(rand.Next(20) + 1));
@@ -224,7 +232,6 @@ namespace DiscordBot.Modules
             "Reaper", "Soujourn", "Soldier: 76", "Sombra", "Symmetra", "Torbjorn", "Tracer", "Widowmaker"
         };
         [Command("randDPS")]
-        [Summary("Roll a random tank hero from Overwatch 2")]
         public Task randDPS()
         {
             return ReplyAsync(""+dps[rand.Next(dps.Count)]);
@@ -235,7 +242,6 @@ namespace DiscordBot.Modules
             "Ana", "Baptiste", "Brigitte", "Kiriko", "Lucio", "Mercy", "Moira", "Zenyatta"
         };
         [Command("randSupport")]
-        [Summary("Roll a random support hero from Overwatch 2")]
         public Task randSupport()
         {
             return ReplyAsync(""+support[rand.Next(support.Count)]);
@@ -244,18 +250,16 @@ namespace DiscordBot.Modules
         private List<String> tank = new List<String>()
         {
             "D.Va", "Doomfist", "Junker Queen", "Orisa", "Reinhardt", "Roadhog",
-            "Sigma", "Winston", "Wrecking Ball", "Zarya"
+            "Sigma", "Winston", "Wrecking Ball", "Zarya", "Ramattra"
         };
         [Command("randTank")]
-        [Summary("Roll a random DPS hero from Overwatch 2")]
         public Task randTank()
         {
             return ReplyAsync(""+tank[rand.Next(tank.Count)]);
         }
         
         
-        ///TODO: Add the params to the help info.
-        ///TODO: Specific command help
+       
         /// This command automatically generates a help message using the Summary
         /// attribute provided by the framework. It is very fast thanks to c# reflections, 
         /// but if you desire you can use this function to generate the message once, 
