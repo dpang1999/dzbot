@@ -49,6 +49,8 @@ namespace DiscordBot
             
             await commandHandler.InstallCommandsAsync();
 
+            //var globalCommand = new SlashCommandBuilder();
+            
             await client.LoginAsync(TokenType.Bot, File.ReadAllText(tokenDir));
             await client.StartAsync();
 

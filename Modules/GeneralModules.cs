@@ -170,7 +170,7 @@ namespace DiscordBot.Modules
                 sw.WriteLine($"[{timestamp.ToString("d")}] {quote} {url}");
             }
             quotes.Add($"[{timestamp.ToString("d")}] {quote} {url}");
-            return ReplyAsync($"Added # {quotes.Count}: [{timestamp.ToString("d")}] {quote} {url}");
+            return ReplyAsync($"Added #{quotes.Count}: [{timestamp.ToString("d")}] {quote} {url}");
         }
 
         
@@ -234,7 +234,8 @@ namespace DiscordBot.Modules
         [Command("randDPS")]
         public Task randDPS()
         {
-            return ReplyAsync(""+dps[rand.Next(dps.Count)]);
+            int num = rand.Next(dps.Count * 10);
+            return ReplyAsync($"({num} % {dps.Count} = {num%dps.Count}): " +  dps[num % dps.Count]);
         }
 
         private List<String> support = new List<String>()
@@ -244,7 +245,8 @@ namespace DiscordBot.Modules
         [Command("randSupport")]
         public Task randSupport()
         {
-            return ReplyAsync(""+support[rand.Next(support.Count)]);
+            int num = rand.Next(support.Count * 10);
+            return ReplyAsync($"({num} % {support.Count} = {num%support.Count}): " + support[num % support.Count]);
         }
 
         private List<String> tank = new List<String>()
@@ -255,7 +257,8 @@ namespace DiscordBot.Modules
         [Command("randTank")]
         public Task randTank()
         {
-            return ReplyAsync(""+tank[rand.Next(tank.Count)]);
+            int num = rand.Next(tank.Count * 10);
+            return ReplyAsync($"({num} % {tank.Count} = {num%tank.Count}): " + tank[num % tank.Count]);
         }
         
         
